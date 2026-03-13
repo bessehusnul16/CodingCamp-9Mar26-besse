@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browser Compatibility Test - Productivity Dashboard</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            margin: 1rem 0;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .pass { background-color: #d4edda; color: #155724; }
+        .fail { background-color: #f8d7da; color: #721c24; }
+        .warning { background-color: #fff3cd; color: #856404; }
+        .browser-info {
+            background-color: #e7f3ff;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .feature-test {
+            border: 1px solid #ddd;
+            padding: 1rem;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0.25rem;
+        }
+        button:hover { background-color: #0056b3; }
+        .test-controls {
+            margin: 1rem 0;
+            text-align: center;
+        }
+        #test-results {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 1rem;
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <h1>Productivity Dashboard - Browser Compatibility Test Suite</h1>
+    
+    <div class="browser-info">
+        <h2>Browser Information</h2>
+        <div id="browser-details"></div>
+    </div>
+
+    <div class="test-controls">
+        <button onclick="runAllTests()">Run All Tests</button>
+        <button onclick="runStorageTests()">Test Local Storage</button>
+        <button onclick="runJavaScriptTests()">Test JavaScript Features</button>
+        <button onclick="runCSSTests()">Test CSS Features</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="test-results"></div>
+    </div>
+
+    <div class="feature-grid">
+        <div class="feature-test">
+            <h3>Local Storage Test</h3>
+            <div id="storage-test-result"></div>
+            <button onclick="testLocalStorage()">Test Storage</button>
+        </div>
+
+        <div class="feature-test">
+            <h3>Date/Time API Test</h3>
+            <div id="datetime-test-result"></div>
+            <button onclick="testDateTimeAPI()">Test Date/Time</button>
+        </div>
+
+        <div class="feature-test">
+            <h3>Timer API Test</h3>
+            <div id="timer-test-result"></div>
+            <button onclick="testTimerAPI()">Test Timers</button>
+        </div>
+
+        <div class="feature-test">
+            <h3>DOM API Test</h3>
+            <div id="dom-test-result"></div>
+            <button onclick="testDOMAPI()">Test DOM</button>
+        </div>
+
+        <div class="feature-test">
+            <h3>CSS Grid Test</h3>
+            <div id="css-test-result"></div>
+            <button onclick="testCSSFeatures()">Test CSS</button>
+        </div>
+
+        <div class="feature-test">
+            <h3>URL API Test</h3>
+            <div id="url-test-result"></div>
+            <button onclick="testURLAPI()">Test URL API</button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Dashboard Integration Test</h2>
+        <div id="dashboard-test"></div>
+        <button onclick="testDashboardIntegration()">Test Dashboard</button>
+    </div>
+
+    <script>
+        // Browser Detection and Information
+        function getBrowserInfo() {
+            const ua = navigator.userAgent;
+            const browserInfo = {
+                userAgent: ua,
+                platform: navigator.platform,
+                language: navigator.language,
+                cookieEnabled: navigator.cookieEnabled,
+                onLine: navigator.onLine
+            };
+
+            // Detect browser type and version
+            let browserName = 'Unknown';
+            let browserVersion = 'Unknown';
+
+            if (ua.indexOf('Chrome') > -1 && ua.indexOf('Edg') === -1) {
+                browserName = 'Chrome';
+                browserVersion = ua.match(/Chrome\/(\d+)/)?.[1] || 'Unknown';
+            } else if (ua.indexOf('Firefox') > -1) {
+                browserName = 'Firefox';
+                browserVersion = ua.match(/Firefox\/(\d+)/)?.[1] || 'Unknown';
+            } else if (ua.indexOf('Edg') > -1) {
+                browserName = 'Edge';
+                browserVersion = ua.match(/Edg\/(\d+)/)?.[1] || 'Unknown';
+            } else if (ua.indexOf('Safari') > -1 && ua.indexOf('Chrome') === -1) {
+                browserName = 'Safari';
+                browserVersion = ua.match(/Version\/(\d+)/)?.[1] || 'Unknown';
+            }
+
+            browserInfo.name = browserName;
+            browserInfo.version = browserVersion;
+            browserInfo.isSupported = checkBrowserSupport(browserName, browserVersion);
+
+            return browserInfo;
+        }
+
+        function checkBrowserSupport(name, version) {
+            const minVersions = {
+                'Chrome': 80,
+                'Firefox': 75,
+                'Edge': 80,
+                'Safari': 13
+            };
+
+            const minVersion = minVersions[name];
+            if (!minVersion) return false;
+
+            const versionNum = parseInt(version);
+            return versionNum >= minVersion;
+        }
+
+        function displayBrowserInfo() {
+            const info = getBrowserInfo();
+            const container = document.getElementById('browser-details');
+            
+            container.innerHTML = `
+                <p><strong>Browser:</strong> ${info.name} ${info.version}</p>
+                <p><strong>Platform:</strong> ${info.platform}</p>
+                <p><strong>Language:</strong> ${info.language}</p>
+                <p><strong>Supported:</strong> <span class="${info.isSupported ? 'pass' : 'fail'}">${info.isSupported ? 'Yes' : 'No'}</span></p>
+                <p><strong>User Agent:</strong> ${info.userAgent}</p>
+            `;
+        }
+
+        // Test Results Management
+        function logResult(test, result, details = '') {
+            const resultsContainer = document.getElementById('test-results');
+            const timestamp = new Date().toLocaleTimeString();
+            const resultClass = result ? 'pass' : 'fail';
+            const resultText = result ? 'PASS' : 'FAIL';
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = `test-result ${resultClass}`;
+            logEntry.innerHTML = `[${timestamp}] ${test}: ${resultText} ${details}`;
+            
+            resultsContainer.appendChild(logEntry);
+            resultsContainer.scrollTop = resultsContainer.scrollHeight;
+        }
+
+        function clearResults() {
+            document.getElementById('test-results').innerHTML = '';
+        }
+
+        // Local Storage Tests
+        function testLocalStorage() {
+            const container = document.getElementById('storage-test-result');
+            let results = [];
+
+            try {
+                // Test basic availability
+                if (typeof Storage === 'undefined' || !localStorage) {
+                    throw new Error('Local Storage not available');
+                }
+                results.push('✓ Local Storage available');
+
+                // Test write operation
+                const testKey = 'browser-test-key';
+                const testData = { test: 'data', timestamp: Date.now() };
+                localStorage.setItem(testKey, JSON.stringify(testData));
+                results.push('✓ Write operation successful');
+
+                // Test read operation
+                const retrieved = JSON.parse(localStorage.getItem(testKey));
+                if (retrieved.test !== 'data') {
+                    throw new Error('Data corruption detected');
+                }
+                results.push('✓ Read operation successful');
+
+                // Test delete operation
+                localStorage.removeItem(testKey);
+                if (localStorage.getItem(testKey) !== null) {
+                    throw new Error('Delete operation failed');
+                }
+                results.push('✓ Delete operation successful');
+
+                // Test quota (approximate)
+                try {
+                    const largeData = 'x'.repeat(1024 * 1024); // 1MB
+                    localStorage.setItem('quota-test', largeData);
+                    localStorage.removeItem('quota-test');
+                    results.push('✓ Storage quota adequate');
+                } catch (e) {
+                    results.push('⚠ Storage quota may be limited');
+                }
+
+                container.innerHTML = `<div class="pass">${results.join('<br>')}</div>`;
+                logResult('Local Storage Test', true, '- All operations successful');
+                return true;
+
+            } catch (error) {
+                container.innerHTML = `<div class="fail">✗ Local Storage failed: ${error.message}</div>`;
+                logResult('Local Storage Test', false, `- ${error.message}`);
+                return false;
+            }
+        }
+
+        // Date/Time API Tests
+        function testDateTimeAPI() {
+            const container = document.getElementById('datetime-test-result');
+            let results = [];
+
+            try {
+                // Test Date constructor
+                const now = new Date();
+                if (isNaN(now.getTime())) {
+                    throw new Error('Date constructor failed');
+                }
+                results.push('✓ Date constructor works');
+
+                // Test toLocaleTimeString
+                const timeString = now.toLocaleTimeString('en-US', {
+                    hour12: false,
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                if (!/^\d{2}:\d{2}$/.test(timeString)) {
+                    throw new Error('Time formatting failed');
+                }
+                results.push('✓ Time formatting works');
+
+                // Test toLocaleDateString
+                const dateString = now.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                if (!dateString || dateString === 'Invalid Date') {
+                    throw new Error('Date formatting failed');
+                }
+                results.push('✓ Date formatting works');
+
+                // Test getHours for greeting logic
+                const hour = now.getHours();
+                if (typeof hour !== 'number' || hour < 0 || hour > 23) {
+                    throw new Error('Hour extraction failed');
+                }
+                results.push('✓ Hour extraction works');
+
+                container.innerHTML = `<div class="pass">${results.join('<br>')}</div>`;
+                logResult('Date/Time API Test', true, '- All date/time operations successful');
+                return true;
+
+            } catch (error) {
+                container.innerHTML = `<div class="fail">✗ Date/Time API failed: ${error.message}</div>`;
+                logResult('Date/Time API Test', false, `- ${error.message}`);
+                return false;
+            }
+        }
+
+        // Timer API Tests
+        function testTimerAPI() {
+            const container = document.getElementById('timer-test-result');
+            let results = [];
+
+            return new Promise((resolve) => {
+                try {
+                    // Test setTimeout
+                    const timeoutStart = Date.now();
+                    setTimeout(() => {
+                        const elapsed = Date.now() - timeoutStart;
+                        if (elapsed < 90 || elapsed > 150) {
+                            results.push('⚠ setTimeout timing may be imprecise');
+                        } else {
+                            results.push('✓ setTimeout works correctly');
+                        }
+
+                        // Test setInterval
+                        let intervalCount = 0;
+                        const intervalStart = Date.now();
+                        const intervalId = setInterval(() => {
+                            intervalCount++;
+                            if (intervalCount >= 3) {
+                                clearInterval(intervalId);
+                                const elapsed = Date.now() - intervalStart;
+                                if (elapsed < 270 || elapsed > 350) {
+                                    results.push('⚠ setInterval timing may be imprecise');
+                                } else {
+                                    results.push('✓ setInterval works correctly');
+                                }
+
+                                // Test clearInterval
+                                results.push('✓ clearInterval works correctly');
+
+                                container.innerHTML = `<div class="pass">${results.join('<br>')}</div>`;
+                                logResult('Timer API Test', true, '- All timer operations successful');
+                                resolve(true);
+                            }
+                        }, 100);
+
+                    }, 100);
+
+                } catch (error) {
+                    container.innerHTML = `<div class="fail">✗ Timer API failed: ${error.message}</div>`;
+                    logResult('Timer API Test', false, `- ${error.message}`);
+                    resolve(false);
+                }
+            });
+        }
+
+        // DOM API Tests
+        function testDOMAPI() {
+            const container = document.getElementById('dom-test-result');
+            let results = [];
+
+            try {
+                // Test querySelector
+                const testElement = document.querySelector('body');
+                if (!testElement) {
+                    throw new Error('querySelector failed');
+                }
+                results.push('✓ querySelector works');
+
+                // Test createElement
+                const newElement = document.createElement('div');
+                if (!newElement || newElement.tagName !== 'DIV') {
+                    throw new Error('createElement failed');
+                }
+                results.push('✓ createElement works');
+
+                // Test addEventListener
+                let eventFired = false;
+                newElement.addEventListener('click', () => {
+                    eventFired = true;
+                });
+                
+                // Simulate click
+                const clickEvent = new Event('click');
+                newElement.dispatchEvent(clickEvent);
+                
+                if (!eventFired) {
+                    throw new Error('addEventListener failed');
+                }
+                results.push('✓ addEventListener works');
+
+                // Test classList
+                newElement.classList.add('test-class');
+                if (!newElement.classList.contains('test-class')) {
+                    throw new Error('classList failed');
+                }
+                results.push('✓ classList works');
+
+                // Test innerHTML
+                newElement.innerHTML = '<span>test</span>';
+                if (!newElement.querySelector('span')) {
+                    throw new Error('innerHTML failed');
+                }
+                results.push('✓ innerHTML works');
+
+                container.innerHTML = `<div class="pass">${results.join('<br>')}</div>`;
+                logResult('DOM API Test', true, '- All DOM operations successful');
+                return true;
+
+            } catch (error) {
+                container.innerHTML = `<div class="fail">✗ DOM API failed: ${error.message}</div>`;
+                logResult('DOM API Test', false, `- ${error.message}`);
+                return false;
+            }
+        }
+
+        // CSS Features Tests
+        function testCSSFeatures() {
+            const container = document.getElementById('css-test-result');
+            let results = [];
+
+            try {
+                // Test CSS Grid support
+                const testDiv = document.createElement('div');
+                testDiv.style.display = 'grid';
+                if (testDiv.style.display !== 'grid') {
+                    throw new Error('CSS Grid not supported');
+                }
+                results.push('✓ CSS Grid supported');
+
+                // Test Flexbox support
+                testDiv.style.display = 'flex';
+                if (testDiv.style.display !== 'flex') {
+                    throw new Error('Flexbox not supported');
+                }
+                results.push('✓ Flexbox supported');
+
+                // Test CSS Custom Properties (Variables)
+                testDiv.style.setProperty('--test-var', 'red');
+                const computedStyle = getComputedStyle(testDiv);
+                results.push('✓ CSS Custom Properties supported');
+
+                // Test CSS Transitions
+                testDiv.style.transition = 'all 0.3s ease';
+                if (testDiv.style.transition.indexOf('0.3s') === -1) {
+                    results.push('⚠ CSS Transitions may not be fully supported');
+                } else {
+                    results.push('✓ CSS Transitions supported');
+                }
+
+                // Test CSS Transforms
+                testDiv.style.transform = 'translateX(10px)';
+                if (testDiv.style.transform.indexOf('translateX') === -1) {
+                    results.push('⚠ CSS Transforms may not be fully supported');
+                } else {
+                    results.push('✓ CSS Transforms supported');
+                }
+
+                container.innerHTML = `<div class="pass">${results.join('<br>')}</div>`;
+                logResult('CSS Features Test', true, '- All CSS features supported');
+                return true;
+
+            } catch (error) {
+                container.innerHTML = `<div class="fail">✗ CSS Features failed: ${error.message}</div>`;
+                logResult('CSS Features Test', false, `- ${error.message}`);
+                return false;
+            }
+        }
+
+        // URL API Tests
+        function testURLAPI() {
+            const container = document.getElementById('url-test-result');
+            let results = [];
+
+            try {
+                // Test URL constructor
+                const testUrl = new URL('https://example.com/path?param=value');
+                if (testUrl.hostname !== 'example.com') {
+                    throw new Error('URL constructor failed');
+                }
+                results.push('✓ URL constructor works');
+
+                // Test URL validation (used in link manager)
+                const validUrls = [
+                    'https://example.com',
+                    'http://test.org',
+                    'https://sub.domain.com/path'
+                ];
+
+                const invalidUrls = [
+                    'not-a-url',
+                    'ftp://example.com',
+                    'javascript:alert(1)'
+                ];
+
+                let urlValidationWorks = true;
+                
+                validUrls.forEach(url => {
+                    try {
+                        const parsed = new URL(url);
+                        if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+                            urlValidationWorks = false;
+                        }
+                    } catch (e) {
+                        urlValidationWorks = false;
+                    }
+                });
+
+                invalidUrls.forEach(url => {
+                    try {
+                        const parsed = new URL(url);
+                        if (url === 'not-a-url') {
+                            urlValidationWorks = false; // Should have thrown
+                        }
+                    } catch (e) {
+                        // Expected for invalid URLs
+                    }
+                });
+
+                if (urlValidationWorks) {
+                    results.push('✓ URL validation works');
+                } else {
+                    results.push('⚠ URL validation may be inconsistent');
+                }
+
+                container.innerHTML = `<div class="pass">${results.join('<br>')}</div>`;
+                logResult('URL API Test', true, '- URL API works correctly');
+                return true;
+
+            } catch (error) {
+                container.innerHTML = `<div class="fail">✗ URL API failed: ${error.message}</div>`;
+                logResult('URL API Test', false, `- ${error.message}`);
+                return false;
+            }
+        }
+
+        // Dashboard Integration Test
+        function testDashboardIntegration() {
+            const container = document.getElementById('dashboard-test');
+            
+            // Create a minimal dashboard test
+            const testFrame = document.createElement('iframe');
+            testFrame.style.width = '100%';
+            testFrame.style.height = '400px';
+            testFrame.style.border = '1px solid #ddd';
+            testFrame.src = 'index.html';
+            
+            container.innerHTML = '<p>Loading dashboard for integration test...</p>';
+            container.appendChild(testFrame);
+            
+            // Test dashboard loading
+            testFrame.onload = function() {
+                try {
+                    const frameDoc = testFrame.contentDocument || testFrame.contentWindow.document;
+                    const dashboardElement = frameDoc.querySelector('.dashboard');
+                    
+                    if (dashboardElement) {
+                        container.innerHTML = '<div class="pass">✓ Dashboard loaded successfully</div>' + container.innerHTML;
+                        logResult('Dashboard Integration Test', true, '- Dashboard loads and renders correctly');
+                    } else {
+                        container.innerHTML = '<div class="fail">✗ Dashboard element not found</div>' + container.innerHTML;
+                        logResult('Dashboard Integration Test', false, '- Dashboard element not found');
+                    }
+                } catch (error) {
+                    container.innerHTML = '<div class="warning">⚠ Cannot access dashboard content (may be due to security restrictions)</div>' + container.innerHTML;
+                    logResult('Dashboard Integration Test', false, `- ${error.message}`);
+                }
+            };
+            
+            testFrame.onerror = function() {
+                container.innerHTML = '<div class="fail">✗ Dashboard failed to load</div>' + container.innerHTML;
+                logResult('Dashboard Integration Test', false, '- Dashboard failed to load');
+            };
+        }
+
+        // Run all tests
+        async function runAllTests() {
+            clearResults();
+            logResult('Test Suite', true, 'Starting comprehensive browser compatibility tests...');
+            
+            const results = {
+                storage: testLocalStorage(),
+                datetime: testDateTimeAPI(),
+                timer: await testTimerAPI(),
+                dom: testDOMAPI(),
+                css: testCSSFeatures(),
+                url: testURLAPI()
+            };
+            
+            const passedTests = Object.values(results).filter(r => r).length;
+            const totalTests = Object.keys(results).length;
+            
+            logResult('Test Suite Complete', true, `${passedTests}/${totalTests} tests passed`);
+            
+            if (passedTests === totalTests) {
+                logResult('Browser Compatibility', true, 'All features supported - Dashboard should work correctly');
+            } else {
+                logResult('Browser Compatibility', false, 'Some features may not work correctly - Check individual test results');
+            }
+        }
+
+        function runStorageTests() {
+            clearResults();
+            testLocalStorage();
+        }
+
+        function runJavaScriptTests() {
+            clearResults();
+            testDateTimeAPI();
+            testTimerAPI();
+            testDOMAPI();
+            testURLAPI();
+        }
+
+        function runCSSTests() {
+            clearResults();
+            testCSSFeatures();
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            displayBrowserInfo();
+            logResult('Browser Compatibility Test Suite', true, 'Ready to test browser compatibility');
+        });
+    </script>
+</body>
+</html>

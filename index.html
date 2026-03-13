@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productivity Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <main class="dashboard">
+        <!-- Greeting Display Section -->
+        <section class="greeting-section" aria-label="Current time and greeting">
+            <div class="greeting-display">
+                <h1 class="greeting-text" id="greeting">Good Morning</h1>
+                <div class="time-display">
+                    <span class="current-time" id="current-time">00:00</span>
+                    <span class="current-date" id="current-date">Loading...</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Timer Section -->
+        <section class="timer-section" aria-label="Focus timer">
+            <div class="timer-component">
+                <h2 class="timer-title">Focus Timer</h2>
+                <div class="timer-display">
+                    <span class="timer-time" id="timer-display">25:00</span>
+                </div>
+                <div class="timer-controls">
+                    <button class="timer-btn start-btn" id="start-timer" aria-label="Start timer">Start</button>
+                    <button class="timer-btn stop-btn" id="stop-timer" aria-label="Stop timer">Stop</button>
+                    <button class="timer-btn reset-btn" id="reset-timer" aria-label="Reset timer">Reset</button>
+                </div>
+                <div class="timer-notification" id="timer-notification" role="alert" aria-live="polite"></div>
+            </div>
+        </section>
+
+        <!-- Tasks Section -->
+        <section class="tasks-section" aria-label="Task management">
+            <div class="task-manager">
+                <h2 class="tasks-title">Tasks</h2>
+                <div class="task-input-container">
+                    <input type="text" class="task-input" id="task-input" placeholder="Add a new task..." aria-label="New task description">
+                    <button class="add-task-btn" id="add-task" aria-label="Add task">Add</button>
+                </div>
+                <ul class="task-list" id="task-list" role="list">
+                    <!-- Tasks will be dynamically added here -->
+                </ul>
+            </div>
+        </section>
+
+        <!-- Quick Links Section -->
+        <section class="links-section" aria-label="Quick links management">
+            <div class="link-manager">
+                <h2 class="links-title">Quick Links</h2>
+                <div class="link-input-container">
+                    <input type="url" class="link-url-input" id="link-url" placeholder="Enter URL..." aria-label="Link URL">
+                    <input type="text" class="link-label-input" id="link-label" placeholder="Enter label..." aria-label="Link label">
+                    <button class="add-link-btn" id="add-link" aria-label="Add link">Add Link</button>
+                </div>
+                <div class="links-grid" id="links-grid">
+                    <!-- Links will be dynamically added here -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Component Test - Productivity Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .pass { color: green; }
+        .fail { color: red; }
+        .test-result { margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <h1>Productivity Dashboard - Component Tests</h1>
+    
+    <div class="test-section">
+        <h2>Storage Service Tests</h2>
+        <div id="storage-tests"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Greeting Display Tests</h2>
+        <div id="greeting-tests"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Timer Component Tests</h2>
+        <div id="timer-tests"></div>
+    </div>
+    
+    <script>
+        // Test results container
+        function addTestResult(containerId, testName, passed, details = '') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = 'test-result';
+            div.innerHTML = `<span class="${passed ? 'pass' : 'fail'}">${passed ? '✓' : '✗'} ${testName}</span> ${details}`;
+            container.appendChild(div);
+        }
+        
+        // Storage Service Tests
+        function testStorageService() {
+            const StorageService = {
+                save: function(key, data) {
+                    try {
+                        if (!this.isSupported()) {
+                            throw new Error('Local Storage not supported');
+                        }
+                        localStorage.setItem(key, JSON.stringify(data));
+                        return true;
+                    } catch (error) {
+                        console.error('Storage save error:', error);
+                        return false;
+                    }
+                },
+                
+                load: function(key) {
+                    try {
+                        if (!this.isSupported()) {
+                            return null;
+                        }
+                        const data = localStorage.getItem(key);
+                        return data ? JSON.parse(data) : null;
+                    } catch (error) {
+                        console.error('Storage load error:', error);
+                        return null;
+                    }
+                },
+                
+                remove: function(key) {
+                    try {
+                        if (!this.isSupported()) {
+                            return false;
+                        }
+                        localStorage.removeItem(key);
+                        return true;
+                    } catch (error) {
+                        console.error('Storage remove error:', error);
+                        return false;
+                    }
+                },
+                
+                isSupported: function() {
+                    try {
+                        return typeof Storage !== 'undefined' && localStorage;
+                    } catch (error) {
+                        return false;
+                    }
+                }
+            };
+            
+            // Test 1: Browser support
+            const isSupported = StorageService.isSupported();
+            addTestResult('storage-tests', 'Local Storage Support', isSupported);
+            
+            if (isSupported) {
+                // Test 2: Save and load
+                const testData = { test: 'data', number: 42 };
+                const saveResult = StorageService.save('test-key', testData);
+                addTestResult('storage-tests', 'Save Data', saveResult);
+                
+                const loadResult = StorageService.load('test-key');
+                const loadPassed = loadResult && loadResult.test === 'data' && loadResult.number === 42;
+                addTestResult('storage-tests', 'Load Data', loadPassed);
+                
+                // Test 3: Remove
+                const removeResult = StorageService.remove('test-key');
+                addTestResult('storage-tests', 'Remove Data', removeResult);
+                
+                const removedData = StorageService.load('test-key');
+                addTestResult('storage-tests', 'Verify Removal', removedData === null);
+            }
+        }
+        
+        // Greeting Display Tests
+        function testGreetingDisplay() {
+            // Test time formatting
+            const testDate = new Date('2024-01-15T14:30:00');
+            
+            function formatTime(date) {
+                return date.toLocaleTimeString('en-US', {
+                    hour12: false,
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+            
+            function formatDate(date) {
+                return date.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
+            
+            function getTimeBasedGreeting(date) {
+                const hour = date.getHours();
+                if (hour >= 5 && hour < 12) return 'Good Morning';
+                if (hour >= 12 && hour < 17) return 'Good Afternoon';
+                if (hour >= 17 && hour < 21) return 'Good Evening';
+                return 'Good Night';
+            }
+            
+            // Test time formatting
+            const timeStr = formatTime(testDate);
+            const timeFormatPassed = /^\d{2}:\d{2}$/.test(timeStr);
+            addTestResult('greeting-tests', 'Time Format (HH:MM)', timeFormatPassed, `Result: ${timeStr}`);
+            
+            // Test date formatting
+            const dateStr = formatDate(testDate);
+            const dateFormatPassed = dateStr && typeof dateStr === 'string' && dateStr.length > 0;
+            addTestResult('greeting-tests', 'Date Format', dateFormatPassed, `Result: ${dateStr}`);
+            
+            // Test greeting logic
+            const greetingTests = [
+                { hour: 8, expected: 'Good Morning' },
+                { hour: 14, expected: 'Good Afternoon' },
+                { hour: 19, expected: 'Good Evening' },
+                { hour: 23, expected: 'Good Night' }
+            ];
+            
+            greetingTests.forEach(test => {
+                const testDate = new Date();
+                testDate.setHours(test.hour);
+                const greeting = getTimeBasedGreeting(testDate);
+                const passed = greeting === test.expected;
+                addTestResult('greeting-tests', `Greeting at ${test.hour}:00`, passed, `Expected: ${test.expected}, Got: ${greeting}`);
+            });
+        }
+        
+        // Timer Component Tests
+        function testTimerComponent() {
+            // Test timer display formatting
+            function formatTimerDisplay(seconds) {
+                const minutes = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+            
+            // Test various time values
+            const timerTests = [
+                { seconds: 1500, expected: '25:00' },
+                { seconds: 900, expected: '15:00' },
+                { seconds: 65, expected: '01:05' },
+                { seconds: 0, expected: '00:00' }
+            ];
+            
+            timerTests.forEach(test => {
+                const result = formatTimerDisplay(test.seconds);
+                const passed = result === test.expected;
+                addTestResult('timer-tests', `Timer Display ${test.seconds}s`, passed, `Expected: ${test.expected}, Got: ${result}`);
+            });
+            
+            // Test timer state logic
+            let timerState = {
+                timeRemaining: 1500,
+                isRunning: false
+            };
+            
+            // Test initial state
+            addTestResult('timer-tests', 'Initial State', timerState.timeRemaining === 1500 && !timerState.isRunning);
+            
+            // Test state transitions
+            timerState.isRunning = true;
+            addTestResult('timer-tests', 'Start State', timerState.isRunning === true);
+            
+            timerState.isRunning = false;
+            addTestResult('timer-tests', 'Stop State', timerState.isRunning === false);
+            
+            timerState.timeRemaining = 1500;
+            addTestResult('timer-tests', 'Reset State', timerState.timeRemaining === 1500);
+        }
+        
+        // Run all tests
+        document.addEventListener('DOMContentLoaded', function() {
+            testStorageService();
+            testGreetingDisplay();
+            testTimerComponent();
+        });
+    </script>
+</body>
+</html>

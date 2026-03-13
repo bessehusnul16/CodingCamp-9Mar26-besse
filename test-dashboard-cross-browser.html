@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Cross-Browser Test</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .test-panel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 300px;
+            background: white;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .test-panel h3 {
+            margin: 0 0 1rem 0;
+            color: #007bff;
+            font-size: 14px;
+        }
+        .test-panel button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0.25rem;
+            font-size: 11px;
+        }
+        .test-panel button:hover {
+            background: #0056b3;
+        }
+        .test-results {
+            background: #f8f9fa;
+            padding: 0.5rem;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .test-log {
+            font-size: 10px;
+            line-height: 1.2;
+            margin: 0.25rem 0;
+        }
+        .test-log.success { color: #28a745; }
+        .test-log.error { color: #dc3545; }
+        .test-log.warning { color: #ffc107; }
+        .test-log.info { color: #17a2b8; }
+        .browser-info {
+            background: #e9ecef;
+            padding: 0.5rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            font-size: 11px;
+        }
+        .toggle-panel {
+            position: fixed;
+            top: 10px;
+            right: 320px;
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 1001;
+        }
+    </style>
+</head>
+<body>
+    <!-- Test Panel -->
+    <button class="toggle-panel" onclick="toggleTestPanel()">Toggle Test Panel</button>
+    <div class="test-panel" id="test-panel">
+        <h3>Cross-Browser Test Suite</h3>
+        
+        <div class="browser-info" id="browser-info">
+            Loading browser info...
+        </div>
+        
+        <div>
+            <button onclick="runAllTests()">Run All Tests</button>
+            <button onclick="runCompatibilityTest()">Browser Compatibility</button>
+            <button onclick="runStorageTest()">Storage Test</button>
+            <button onclick="runComponentTests()">Component Tests</button>
+            <button onclick="clearTestResults()">Clear Results</button>
+        </div>
+        
+        <div class="test-results" id="test-results">
+            <div class="test-log info">Test suite ready. Click 'Run All Tests' to start.</div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <main class="dashboard">
+        <!-- Greeting Display Section -->
+        <section class="greeting-section" aria-label="Current time and greeting">
+            <div class="greeting-display">
+                <h1 class="greeting-text" id="greeting">Good Morning</h1>
+                <div class="time-display">
+                    <span class="current-time" id="current-time">00:00</span>
+                    <span class="current-date" id="current-date">Loading...</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Timer Section -->
+        <section class="timer-section" aria-label="Focus timer">
+            <div class="timer-component">
+                <h2 class="timer-title">Focus Timer</h2>
+                <div class="timer-display">
+                    <span class="timer-time" id="timer-display">25:00</span>
+                </div>
+                <div class="timer-controls">
+                    <button class="timer-btn start-btn" id="start-timer" aria-label="Start timer">Start</button>
+                    <button class="timer-btn stop-btn" id="stop-timer" aria-label="Stop timer">Stop</button>
+                    <button class="timer-btn reset-btn" id="reset-timer" aria-label="Reset timer">Reset</button>
+                </div>
+                <div class="timer-notification" id="timer-notification" role="alert" aria-live="polite"></div>
+            </div>
+        </section>
+
+        <!-- Tasks Section -->
+        <section class="tasks-section" aria-label="Task management">
+            <div class="task-manager">
+                <h2 class="tasks-title">Tasks</h2>
+                <div class="task-input-container">
+                    <input type="text" class="task-input" id="task-input" placeholder="Add a new task..." aria-label="New task description">
+                    <button class="add-task-btn" id="add-task" aria-label="Add task">Add</button>
+                </div>
+                <ul class="task-list" id="task-list" role="list">
+                    <!-- Tasks will be dynamically added here -->
+                </ul>
+            </div>
+        </section>
+
+        <!-- Quick Links Section -->
+        <section class="links-section" aria-label="Quick links management">
+            <div class="link-manager">
+                <h2 class="links-title">Quick Links</h2>
+                <div class="link-input-container">
+                    <input type="url" class="link-url-input" id="link-url" placeholder="Enter URL..." aria-label="Link URL">
+                    <input type="text" class="link-label-input" id="link-label" placeholder="Enter label..." aria-label="Link label">
+                    <button class="add-link-btn" id="add-link" aria-label="Add link">Add Link</button>
+                </div>
+                <div class="links-grid" id="links-grid">
+                    <!-- Links will be dynamically added here -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Load Scripts -->
+    <script src="js/app.js"></script>
+    <script src="test-cross-browser-functionality.js"></script>
+    
+    <script>
+        // Test panel management
+        let testPanelVisible = true;
+        
+        function toggleTestPanel() {
+            const panel = document.getElementById('test-panel');
+            testPanelVisible = !testPanelVisible;
+            panel.style.display = testPanelVisible ? 'block' : 'none';
+        }
+        
+        function logToPanel(message, type = 'info') {
+            const resultsDiv = document.getElementById('test-results');
+            const logDiv = document.createElement('div');
+            logDiv.className = `test-log ${type}`;
+            logDiv.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            resultsDiv.appendChild(logDiv);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+        
+        function clearTestResults() {
+            document.getElementById('test-results').innerHTML = '';
+            if (window.CrossBrowserTests) {
+                CrossBrowserTests.clearResults();
+            }
+            logToPanel('Test results cleared', 'info');
+        }
+        
+        function updateBrowserInfo() {
+            const browserInfoDiv = document.getElementById('browser-info');
+            const ua = navigator.userAgent;
+            let browserName = 'Unknown';
+            let browserVersion = 'Unknown';
+
+            if (ua.indexOf('Chrome') > -1 && ua.indexOf('Edg') === -1) {
+                browserName = 'Chrome';
+                browserVersion = ua.match(/Chrome\/(\d+)/)?.[1] || 'Unknown';
+            } else if (ua.indexOf('Firefox') > -1) {
+                browserName = 'Firefox';
+                browserVersion = ua.match(/Firefox\/(\d+)/)?.[1] || 'Unknown';
+            } else if (ua.indexOf('Edg') > -1) {
+                browserName = 'Edge';
+                browserVersion = ua.match(/Edg\/(\d+)/)?.[1] || 'Unknown';
+            } else if (ua.indexOf('Safari') > -1 && ua.indexOf('Chrome') === -1) {
+                browserName = 'Safari';
+                browserVersion = ua.match(/Version\/(\d+)/)?.[1] || 'Unknown';
+            }
+            
+            const minVersions = { 'Chrome': 80, 'Firefox': 75, 'Edge': 80, 'Safari': 13 };
+            const minVersion = minVersions[browserName];
+            const versionNum = parseInt(browserVersion);
+            const isSupported = minVersion && versionNum >= minVersion;
+            
+            browserInfoDiv.innerHTML = `
+                <strong>${browserName} ${browserVersion}</strong><br>
+                Platform: ${navigator.platform}<br>
+                Supported: <span style="color: ${isSupported ? 'green' : 'red'}">${isSupported ? 'Yes' : 'No'}</span>
+            `;
+        }
+        
+        async function runAllTests() {
+            if (!window.CrossBrowserTests) {
+                logToPanel('Test suite not available', 'error');
+                return;
+            }
+            
+            logToPanel('Starting comprehensive test suite...', 'info');
+            
+            try {
+                const results = await CrossBrowserTests.runAllTests();
+                
+                logToPanel(`Tests completed: ${results.summary.passed}/${results.summary.total} passed`, 'info');
+                
+                Object.entries(results.results).forEach(([testName, result]) => {
+                    const status = result.success ? 'PASS' : 'FAIL';
+                    const type = result.success ? 'success' : 'error';
+                    logToPanel(`${status}: ${testName}`, type);
+                    
+                    if (!result.success && result.error) {
+                        logToPanel(`  Error: ${result.error}`, 'error');
+                    }
+                });
+                
+                // Display overall result
+                const overallType = results.summary.passRate >= 80 ? 'success' : 'error';
+                logToPanel(`Overall: ${results.summary.passRate}% pass rate`, overallType);
+                
+            } catch (error) {
+                logToPanel(`Test suite failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function runCompatibilityTest() {
+            if (!window.CrossBrowserTests) {
+                logToPanel('Test suite not available', 'error');
+                return;
+            }
+            
+            try {
+                const result = await CrossBrowserTests.runTest('testBrowserCompatibility');
+                const type = result.success ? 'success' : 'error';
+                logToPanel(`Browser compatibility: ${result.success ? 'PASS' : 'FAIL'}`, type);
+                
+                if (result.browserInfo) {
+                    logToPanel(`Detected: ${result.browserInfo.name} ${result.browserInfo.version}`, 'info');
+                }
+                
+                if (result.featureSupport) {
+                    logToPanel(`Features: ${result.featureSupport.supportedCount}/${result.featureSupport.totalCount}`, 'info');
+                }
+            } catch (error) {
+                logToPanel(`Compatibility test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function runStorageTest() {
+            if (!window.CrossBrowserTests) {
+                logToPanel('Test suite not available', 'error');
+                return;
+            }
+            
+            try {
+                const result = await CrossBrowserTests.runTest('testLocalStorage');
+                const type = result.success ? 'success' : 'error';
+                logToPanel(`Storage test: ${result.success ? 'PASS' : 'FAIL'}`, type);
+                
+                if (!result.success && result.error) {
+                    logToPanel(`Error: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                logToPanel(`Storage test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function runComponentTests() {
+            if (!window.CrossBrowserTests) {
+                logToPanel('Test suite not available', 'error');
+                return;
+            }
+            
+            const componentTests = [
+                'testGreetingDisplay',
+                'testTimerComponent',
+                'testTaskManager',
+                'testLinkManager'
+            ];
+            
+            logToPanel('Running component tests...', 'info');
+            
+            for (const testName of componentTests) {
+                try {
+                    const result = await CrossBrowserTests.runTest(testName);
+                    const type = result.success ? 'success' : 'error';
+                    const displayName = testName.replace('test', '').replace(/([A-Z])/g, ' $1').trim();
+                    logToPanel(`${displayName}: ${result.success ? 'PASS' : 'FAIL'}`, type);
+                    
+                    if (!result.success && result.error) {
+                        logToPanel(`  Error: ${result.error}`, 'error');
+                    }
+                } catch (error) {
+                    logToPanel(`${testName} failed: ${error.message}`, 'error');
+                }
+            }
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            updateBrowserInfo();
+            
+            // Wait for dashboard to initialize
+            setTimeout(() => {
+                if (window.CrossBrowserTests && window.ProductivityDashboard) {
+                    logToPanel('Test suite initialized and ready', 'success');
+                } else {
+                    logToPanel('Warning: Test suite or dashboard not fully loaded', 'warning');
+                }
+            }, 1500);
+        });
+    </script>
+</body>
+</html>

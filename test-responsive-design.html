@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Design Test - Productivity Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #f8f9fa;
+        }
+        .viewport-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            z-index: 1000;
+        }
+        .test-section {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        .test-btn {
+            padding: 0.75rem 1.5rem;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .test-btn:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+        .performance-results {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="viewport-info" id="viewport-info">
+        Viewport: <span id="viewport-size"></span>
+    </div>
+    
+    <div class="test-container">
+        <h1>Responsive Design & Performance Test</h1>
+        
+        <div class="test-section">
+            <h2>Responsive Layout Test</h2>
+            <p>Resize your browser window to test different breakpoints:</p>
+            <ul>
+                <li><strong>Mobile:</strong> &lt; 576px</li>
+                <li><strong>Small Tablet:</strong> 576px - 767px</li>
+                <li><strong>Tablet:</strong> 768px - 991px</li>
+                <li><strong>Desktop:</strong> 992px - 1199px</li>
+                <li><strong>Large Desktop:</strong> ≥ 1200px</li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <h2>Interactive Elements Test</h2>
+            <div class="test-buttons">
+                <button class="test-btn" onclick="testButtonResponse(this)">Test Button Response</button>
+                <button class="test-btn" onclick="testDebounce()">Test Debounced Action</button>
+                <button class="test-btn" onclick="testPerformance()">Test Performance</button>
+            </div>
+            <div class="performance-results" id="performance-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Sample Dashboard Components</h2>
+            
+            <!-- Sample Timer Component -->
+            <div class="timer-component" style="margin-bottom: 2rem;">
+                <h3 class="timer-title">Sample Timer</h3>
+                <div class="timer-display">
+                    <span class="timer-time">25:00</span>
+                </div>
+                <div class="timer-controls">
+                    <button class="timer-btn start-btn">Start</button>
+                    <button class="timer-btn stop-btn">Stop</button>
+                    <button class="timer-btn reset-btn">Reset</button>
+                </div>
+            </div>
+            
+            <!-- Sample Task Input -->
+            <div class="task-input-container" style="margin-bottom: 2rem;">
+                <input type="text" class="task-input" placeholder="Test task input responsiveness...">
+                <button class="add-task-btn">Add Task</button>
+            </div>
+            
+            <!-- Sample Link Input -->
+            <div class="link-input-container">
+                <input type="url" class="link-url-input" placeholder="https://example.com">
+                <input type="text" class="link-label-input" placeholder="Example Site">
+                <button class="add-link-btn">Add Link</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Update viewport info
+        function updateViewportInfo() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            document.getElementById('viewport-size').textContent = `${width}x${height}`;
+        }
+        
+        // Test button response time
+        function testButtonResponse(button) {
+            const start = performance.now();
+            button.style.transform = 'translateY(-2px)';
+            button.style.background = '#27ae60';
+            
+            setTimeout(() => {
+                const end = performance.now();
+                const responseTime = end - start;
+                button.style.transform = '';
+                button.style.background = '';
+                
+                const results = document.getElementById('performance-results');
+                results.innerHTML += `Button response time: ${responseTime.toFixed(2)}ms\n`;
+            }, 50);
+        }
+        
+        // Test debounced action
+        let debounceCount = 0;
+        let debounceTimeout;
+        function testDebounce() {
+            debounceCount++;
+            clearTimeout(debounceTimeout);
+            
+            debounceTimeout = setTimeout(() => {
+                const results = document.getElementById('performance-results');
+                results.innerHTML += `Debounced action executed after ${debounceCount} rapid calls\n`;
+                debounceCount = 0;
+            }, 300);
+        }
+        
+        // Test performance
+        function testPerformance() {
+            const results = document.getElementById('performance-results');
+            results.innerHTML += 'Running performance tests...\n';
+            
+            // Test DOM query performance
+            const start1 = performance.now();
+            for (let i = 0; i < 1000; i++) {
+                document.querySelector('.test-btn');
+            }
+            const end1 = performance.now();
+            results.innerHTML += `1000 DOM queries: ${(end1 - start1).toFixed(2)}ms\n`;
+            
+            // Test DOM manipulation performance
+            const start2 = performance.now();
+            const fragment = document.createDocumentFragment();
+            for (let i = 0; i < 100; i++) {
+                const div = document.createElement('div');
+                div.textContent = `Test element ${i}`;
+                fragment.appendChild(div);
+            }
+            const end2 = performance.now();
+            results.innerHTML += `100 DOM elements created: ${(end2 - start2).toFixed(2)}ms\n`;
+            
+            // Test animation performance
+            const start3 = performance.now();
+            const testElement = document.createElement('div');
+            testElement.style.transition = 'all 0.3s ease';
+            testElement.style.transform = 'translateX(100px)';
+            document.body.appendChild(testElement);
+            
+            setTimeout(() => {
+                const end3 = performance.now();
+                results.innerHTML += `Animation setup: ${(end3 - start3).toFixed(2)}ms\n`;
+                document.body.removeChild(testElement);
+            }, 10);
+        }
+        
+        // Initialize
+        updateViewportInfo();
+        window.addEventListener('resize', updateViewportInfo);
+        
+        // Clear results
+        setTimeout(() => {
+            document.getElementById('performance-results').innerHTML = 'Performance test results will appear here...\n';
+        }, 100);
+    </script>
+</body>
+</html>
